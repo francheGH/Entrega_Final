@@ -80,8 +80,8 @@ int main(int argc,char*argv[]){
     //Aloca memoria para las matrices
     A=(double*)malloc(sizeof(double)*N*N); /*Almacenada por filas*/
     B=(double*)malloc(sizeof(double)*N*N); /*Almacenada por columnas siendo la transpuesta de A*/
-    L=(double*)malloc(sizeof(double)*((N*(N+1))/2)); /*Triangular Inferior almacenada por columnas en arreglo*/
-    U=(double*)malloc(sizeof(double)*((N*(N+1))/2)); /*Triangular Superior almacenada por filas en arreglo*/
+    L=(double*)malloc(sizeof(double)*N*N); /*Triangular Inferior almacenada por columnas en arreglo*/
+    U=(double*)malloc(sizeof(double)*N*N); /*Triangular Superior almacenada por filas en arreglo*/
     R1=(double*)malloc(sizeof(double)*N*N); /*Almacenada por filas*/
     R2=(double*)malloc(sizeof(double)*N*N); /*Almacenada por filas*/
     R3=(double*)malloc(sizeof(double)*N*N); /*Almacenada por filas*/
@@ -100,9 +100,11 @@ int main(int argc,char*argv[]){
             
             if (i > j){
 				U[j+((i*(i+1))/2)] = 1; 
+                L[i+((j*(j+1))/2)] = 0; 
                
 		  	}else if (i < j){
 				L[i+((j*(j+1))/2)] = 1; 
+                U[j+((i*(i+1))/2)] = 0; 
 			}else if (i==j){
 				U[j+((i*(i+1))/2)] = 1;
 				L[i+((j*(j+1))/2)] = 1;
@@ -119,7 +121,7 @@ int main(int argc,char*argv[]){
     /*R1= aMin*A*L */
     for(i=0;i<N;i++){
         for (j=0; j<N; j++){
-            for (k=0;k<i+1; k++){
+            for (k=0;k<N; k++){
                     R1[i*N + j] = R1[i*N + j] +  A[i*N + k] * L[k+((j*(j+1))/2)] * aMin;
             }
         }
@@ -139,7 +141,7 @@ int main(int argc,char*argv[]){
     /*R3= aProm*U*B */
     for(i=0;i<N;i++){
         for (j=0; j<N; j++){
-            for (k=0;k<i+1; k++){
+            for (k=0;k<N; k++){
                         R3[i*N + j] = R3[i*N + j] + U[k + (i*(i+1))/2] * B[k+j*N] * aProm;
             }
         }
