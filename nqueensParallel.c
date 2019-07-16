@@ -9,12 +9,8 @@ typedef int bool;
 #define true 1
 #define false 0
 
+#define QUIERO_TRABAJO 1
 
-/*
-bool threatens(const int row_1, const int row_2, const int col_1, const int col_2) {
-    return (row_1==row_2||abs(row_1-row_2)==abs(col_1-col_2));
-}
- */
 double dwalltime(){
     double sec;
     struct timeval tv;
@@ -102,10 +98,14 @@ int recursionMaster(int myRank, int cantProcesos, int tamanioT) {
     ptrPos = pos;
     // inicializa el trabajo para todos los workers
     for (trabajadoresActivos=0; trabajadoresActivos<cantProcesos-1; trabajadoresActivos++) {
+        MPI_Recv(0, 0, MPI_INT, MPI_ANY_SOURCE, QUIERO_TRABAJO, MPI_COMM_WORLD, &status);
+        sender = status.MPI_SOURCE;  
+        
         proxima_posicion(tablero, ptrPos, tamanioT);
         buf[0] = ptrPos[0];
         buf[1] = ptrPos[1];
-        MPI_Send(&buf, 3, MPI_INT, trabajadoresActivos+1, 0, MPI_COMM_WORLD);
+        
+        MPI_Send(&buf, 3, MPI_INT, sender, 0, MPI_COMM_WORLD);
     }
     // Start receiving soluciones and dish out work until none left. Then kill processes
     while (trabajadoresActivos>0) {
@@ -137,11 +137,10 @@ int recursionMaster(int myRank, int cantProcesos, int tamanioT) {
  */
 void recursionWorker(int myRank, int cantProcesos, int tamanioT) {
     int buf[3], solucionesParciales;
-    
-    
-    
     MPI_Status status;
-    // Receive initial work
+    //El worker es el que pide trabajo
+    MPI_Send(0, 0, MPI_INT, 0, QUIERO_TRABAJO, MPI_COMM_WORLD);
+    // Recibe el primer trabajo
     MPI_Recv(&buf, 3, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
     // Receive more work until termination message received
     while (buf[2]==1) {// hay trabajo
